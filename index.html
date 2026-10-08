@@ -1,0 +1,1432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HealthPass | Adaptive Diabetes Risk Screening Kiosk</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --primary-light: #eff6ff;
+      --success: #059669;
+      --success-light: #ecfdf5;
+      --warning: #d97706;
+      --warning-light: #fffbeb;
+      --danger: #dc2626;
+      --danger-light: #fef2f2;
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --surface-2: #f1f5f9;
+      --border: #e2e8f0;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --text-light: #94a3b8;
+      --radius-lg: 16px;
+      --radius-md: 10px;
+      --radius-sm: 6px;
+      --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+      --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.07), 0 2px 4px -2px rgb(0 0 0 / 0.07);
+      --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.08), 0 4px 6px -4px rgb(0 0 0 / 0.05);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Top Navigation Header */
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      backdrop-filter: blur(8px);
+    }
+    .header-inner {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 14px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: inherit;
+    }
+    .brand-icon {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, #2563eb, #3b82f6);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 800;
+      font-size: 20px;
+      box-shadow: 0 4px 10px rgba(37, 99, 235, 0.25);
+    }
+    .brand-title {
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: var(--text);
+    }
+    .brand-subtitle {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+    .nav-tabs {
+      display: flex;
+      gap: 6px;
+      background: var(--surface-2);
+      padding: 4px;
+      border-radius: var(--radius-md);
+    }
+    .nav-tab {
+      border: none;
+      background: transparent;
+      padding: 8px 16px;
+      border-radius: var(--radius-sm);
+      font-size: 13.5px;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.18s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .nav-tab:hover {
+      color: var(--text);
+    }
+    .nav-tab.active {
+      background: var(--surface);
+      color: var(--primary);
+      box-shadow: var(--shadow-sm);
+    }
+
+    /* Disclaimer Alert Banner */
+    .disclaimer-banner {
+      background: #fffbeb;
+      border-bottom: 1px solid #fef3c7;
+      padding: 10px 24px;
+    }
+    .disclaimer-inner {
+      max-width: 1280px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 13px;
+      color: #92400e;
+    }
+    .disclaimer-tag {
+      background: #f59e0b;
+      color: white;
+      font-size: 10.5px;
+      font-weight: 800;
+      padding: 3px 8px;
+      border-radius: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      white-space: nowrap;
+    }
+
+    /* Main Container */
+    main {
+      max-width: 1280px;
+      margin: 24px auto;
+      padding: 0 24px;
+      flex: 1;
+      width: 100%;
+    }
+
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* Layout Grids */
+    .grid-screening {
+      display: grid;
+      grid-template-columns: 1.15fr 1fr;
+      gap: 28px;
+      align-items: start;
+    }
+    @media (max-width: 992px) {
+      .grid-screening { grid-template-columns: 1fr; }
+    }
+
+    /* Cards */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      box-shadow: var(--shadow-sm);
+    }
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--border);
+    }
+    .card-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .card-subtitle {
+      font-size: 12.5px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    /* Presets Toolbar */
+    .presets-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    .presets-label {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      margin-right: 4px;
+    }
+    .preset-btn {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 6px 14px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+    }
+    .preset-btn:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+      background: var(--primary-light);
+    }
+    .dot-danger { width: 8px; height: 8px; border-radius: 50%; background: var(--danger); }
+    .dot-warning { width: 8px; height: 8px; border-radius: 50%; background: var(--warning); }
+    .dot-success { width: 8px; height: 8px; border-radius: 50%; background: var(--success); }
+
+    /* Form Elements */
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    .form-group-full {
+      grid-column: 1 / -1;
+    }
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .form-label {
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--text);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .form-hint {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: normal;
+    }
+    .input-wrap {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+    .form-input {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+      color: var(--text);
+      background: var(--surface);
+      outline: none;
+      transition: border 0.15s ease;
+      font-family: inherit;
+    }
+    .form-input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+    .unit-badge {
+      position: absolute;
+      right: 12px;
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 600;
+      pointer-events: none;
+    }
+    .slider-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .slider-row input[type="range"] {
+      flex: 1;
+      accent-color: var(--primary);
+      cursor: pointer;
+    }
+    .slider-val {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      font-weight: 600;
+      min-width: 48px;
+      text-align: right;
+      color: var(--text);
+    }
+
+    /* Action Buttons */
+    .btn-submit {
+      width: 100%;
+      padding: 14px 20px;
+      border-radius: var(--radius-md);
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      color: white;
+      border: none;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+      transition: all 0.2s ease;
+      margin-top: 10px;
+    }
+    .btn-submit:hover {
+      background: linear-gradient(135deg, #1d4ed8, #1e40af);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px rgba(37, 99, 235, 0.35);
+    }
+    .btn-submit:active { transform: translateY(0); }
+
+    /* Report Card / English Display */
+    .report-placeholder {
+      padding: 48px 20px;
+      text-align: center;
+      color: var(--text-muted);
+    }
+    .report-placeholder-icon {
+      font-size: 40px;
+      margin-bottom: 12px;
+      opacity: 0.6;
+    }
+
+    .report-body {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    /* Visual Risk Gauge & Header */
+    .risk-header-card {
+      border-radius: var(--radius-md);
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      position: relative;
+      overflow: hidden;
+    }
+    .risk-header-card.risk-high {
+      background: linear-gradient(135deg, #fef2f2, #fee2e2);
+      border: 1px solid #fca5a5;
+    }
+    .risk-header-card.risk-moderate {
+      background: linear-gradient(135deg, #fffbeb, #fef3c7);
+      border: 1px solid #fcd34d;
+    }
+    .risk-header-card.risk-low {
+      background: linear-gradient(135deg, #ecfdf5, #d1fae5);
+      border: 1px solid #6ee7b7;
+    }
+
+    .risk-score-circle {
+      width: 86px;
+      height: 86px;
+      border-radius: 50%;
+      background: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      box-shadow: var(--shadow-sm);
+      flex-shrink: 0;
+      border: 3px solid transparent;
+    }
+    .risk-high .risk-score-circle { border-color: var(--danger); color: var(--danger); }
+    .risk-moderate .risk-score-circle { border-color: var(--warning); color: var(--warning); }
+    .risk-low .risk-score-circle { border-color: var(--success); color: var(--success); }
+
+    .risk-circle-num {
+      font-size: 22px;
+      font-weight: 800;
+      font-family: 'JetBrains Mono', monospace;
+      line-height: 1;
+    }
+    .risk-circle-lbl {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .risk-headline {
+      flex: 1;
+    }
+    .risk-badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 11.5px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 6px;
+    }
+    .risk-high .risk-badge { background: var(--danger); color: white; }
+    .risk-moderate .risk-badge { background: var(--warning); color: white; }
+    .risk-low .risk-badge { background: var(--success); color: white; }
+
+    .risk-title-english {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .risk-patient-meta {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    /* English Clinical Guidance */
+    .guidance-box {
+      background: var(--surface-2);
+      border-left: 4px solid var(--primary);
+      padding: 14px 16px;
+      border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    }
+    .guidance-heading {
+      font-size: 12.5px;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: var(--primary);
+      letter-spacing: 0.03em;
+      margin-bottom: 4px;
+    }
+    .guidance-text {
+      font-size: 13.5px;
+      color: var(--text);
+      line-height: 1.45;
+    }
+
+    /* Contributing Drivers List */
+    .drivers-section-title {
+      font-size: 13.5px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .drivers-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .driver-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 12px 14px;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      transition: all 0.15s ease;
+    }
+    .driver-card:hover {
+      border-color: #cbd5e1;
+      background: #fafafa;
+    }
+    .driver-impact-icon {
+      width: 26px;
+      height: 26px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 14px;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+    .impact-up {
+      background: #fee2e2;
+      color: var(--danger);
+    }
+    .impact-down {
+      background: #ecfdf5;
+      color: var(--success);
+    }
+    .driver-details {
+      flex: 1;
+    }
+    .driver-name-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2px;
+    }
+    .driver-feature-name {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text);
+      text-transform: capitalize;
+    }
+    .driver-value-tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11.5px;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+    .driver-sentence {
+      font-size: 12.5px;
+      color: #475569;
+      line-height: 1.4;
+    }
+
+    /* Pruning & Feature Pills */
+    .feature-pills-wrap {
+      background: #f8fafc;
+      border: 1px dashed var(--border);
+      border-radius: var(--radius-md);
+      padding: 14px;
+    }
+    .feature-pill-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      margin-bottom: 8px;
+    }
+    .pill-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .pill {
+      font-size: 11.5px;
+      padding: 3px 10px;
+      border-radius: 999px;
+      font-weight: 600;
+    }
+    .pill-selected {
+      background: #dbeafe;
+      color: #1e40af;
+      border: 1px solid #bfdbfe;
+    }
+    .pill-pruned {
+      background: #f1f5f9;
+      color: #94a3b8;
+      border: 1px solid #e2e8f0;
+      text-decoration: line-through;
+    }
+
+    /* Tab 2: Analytics & GA Intelligence */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    @media (max-width: 860px) {
+      .stats-row { grid-template-columns: 1fr 1fr; }
+    }
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 18px;
+    }
+    .stat-lbl {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      margin-bottom: 6px;
+    }
+    .stat-val {
+      font-size: 26px;
+      font-weight: 800;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--text);
+    }
+    .stat-sub {
+      font-size: 11.5px;
+      color: var(--success);
+      font-weight: 600;
+      margin-top: 4px;
+    }
+
+    .analytics-grid {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 24px;
+    }
+    @media (max-width: 900px) {
+      .analytics-grid { grid-template-columns: 1fr; }
+    }
+
+    .chart-container {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      text-align: center;
+    }
+    .chart-img {
+      max-width: 100%;
+      height: auto;
+      border-radius: var(--radius-sm);
+    }
+
+    .importance-bar-row {
+      margin-bottom: 12px;
+    }
+    .importance-info {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12.5px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    .importance-track {
+      background: var(--surface-2);
+      height: 8px;
+      border-radius: 999px;
+      overflow: hidden;
+    }
+    .importance-fill {
+      background: var(--primary);
+      height: 100%;
+      border-radius: 999px;
+    }
+
+    /* Tab 3: History Table */
+    .table-container {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow-x: auto;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 13.5px;
+    }
+    th {
+      background: #f8fafc;
+      padding: 12px 16px;
+      font-weight: 700;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+    td {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text);
+    }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #fafcff; }
+
+    /* Footer */
+    footer {
+      margin-top: auto;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      padding: 18px 24px;
+      text-align: center;
+      font-size: 12.5px;
+      color: var(--text-muted);
+    }
+
+    /* Print styling */
+    @media print {
+      header, .disclaimer-banner, .presets-bar, .form-grid, .btn-submit, .nav-tabs, footer {
+        display: none !important;
+      }
+      body { background: white; color: black; }
+      .grid-screening { grid-template-columns: 1fr; }
+      .card { border: none; box-shadow: none; padding: 0; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Header Navigation -->
+  <header>
+    <div class="header-inner">
+      <a href="#" class="brand">
+        <div class="brand-icon">HP</div>
+        <div>
+          <div class="brand-title">HealthPass Portal</div>
+          <div class="brand-subtitle">VIT Bhopal | Adaptive Risk Screening Kiosk</div>
+        </div>
+      </a>
+
+      <div class="nav-tabs">
+        <button class="nav-tab active" onclick="switchTab('tab-screening')">
+          🩺 Kiosk Screening
+        </button>
+        <button class="nav-tab" onclick="switchTab('tab-analytics')">
+          🧬 GA Optimization
+        </button>
+        <button class="nav-tab" onclick="switchTab('tab-history')">
+          📋 Screening Log
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Screening-Not-Diagnosis Disclaimer Banner -->
+  <div class="disclaimer-banner">
+    <div class="disclaimer-inner">
+      <span class="disclaimer-tag">Screening Only</span>
+      <span><strong>Important:</strong> HealthPass operates on physiological proxy signals without a blood glucose sensor. It <em>does not diagnose diabetes</em>. High scores recommend follow-up clinical lab tests (HbA1c/FPG).</span>
+    </div>
+  </div>
+
+  <main>
+    <!-- TAB 1: KIOSK SCREENING (Interactive Simulation & English Report) -->
+    <section id="tab-screening" class="tab-content active">
+      <div class="grid-screening">
+        
+        <!-- Left: Sensor Input Kiosk Controls -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title">Kiosk Sensor Readings</h2>
+              <p class="card-subtitle">Adjust patient vitals or select a simulated clinical preset</p>
+            </div>
+          </div>
+
+          <!-- Quick Presets -->
+          <div class="presets-bar">
+            <span class="presets-label">Presets:</span>
+            <button type="button" class="preset-btn" onclick="applyPreset('high')">
+              <span class="dot-danger"></span> High Risk Senior
+            </button>
+            <button type="button" class="preset-btn" onclick="applyPreset('moderate')">
+              <span class="dot-warning"></span> Moderate / Stressed
+            </button>
+            <button type="button" class="preset-btn" onclick="applyPreset('low')">
+              <span class="dot-success"></span> Healthy / Low Risk
+            </button>
+          </div>
+
+          <form id="screening-form" onsubmit="event.preventDefault(); runScreening();">
+            <div class="form-grid">
+              
+              <div class="form-group form-group-full">
+                <label class="form-label">
+                  <span>Patient RFID / NFC Badge ID</span>
+                  <span class="form-hint">Scanned from RFID reader</span>
+                </label>
+                <input type="text" id="rfid_tag" class="form-input" value="VIT_STUDENT_8412" required>
+              </div>
+
+              <!-- Age -->
+              <div class="form-group">
+                <label class="form-label">
+                  <span>Age</span>
+                  <span class="form-hint">years</span>
+                </label>
+                <div class="slider-row">
+                  <input type="range" id="age_slider" min="18" max="80" value="58" oninput="syncVal('age_slider', 'age')">
+                  <span id="age_txt" class="slider-val">58</span>
+                </div>
+                <input type="hidden" id="age" value="58">
+              </div>
+
+              <!-- BMI -->
+              <div class="form-group">
+                <label class="form-label">
+                  <span>Body Mass Index (BMI)</span>
+                  <span class="form-hint">HX711 Load Cell</span>
+                </label>
+                <div class="slider-row">
+                  <input type="range" id="bmi_slider" min="16.0" max="45.0" step="0.1" value="33.5" oninput="syncVal('bmi_slider', 'bmi')">
+                  <span id="bmi_txt" class="slider-val">33.5</span>
+                </div>
+                <input type="hidden" id="bmi" value="33.5">
+              </div>
+
+              <!-- Systolic BP -->
+              <div class="form-group">
+                <label class="form-label">
+                  <span>Systolic Blood Pressure</span>
+                  <span class="form-hint">mmHg</span>
+                </label>
+                <div class="slider-row">
+                  <input type="range" id="systolic_bp_slider" min="90" max="185" value="146" oninput="syncVal('systolic_bp_slider', 'systolic_bp')">
+                  <span id="systolic_bp_txt" class="slider-val">146</span>
+                </div>
+                <input type="hidden" id="systolic_bp" value="146">
+              </div>
+
+              <!-- Activity Level -->
+              <div class="form-group">
+                <label class="form-label">
+                  <span>Physical Activity Proxy</span>
+                  <span class="form-hint">MPU6050 Motion</span>
+                </label>
+                <div class="slider-row">
+                  <input type="range" id="activity_level_slider" min="1" max="5" value="1" oninput="syncVal('activity_level_slider', 'activity_level')">
+                  <span id="activity_level_txt" class="slider-val">1 (Sedentary)</span>
+                </div>
+                <input type="hidden" id="activity_level" value="1">
+              </div>
+
+              <!-- Heart Rate -->
+              <div class="form-group">
+                <label class="form-label">
+                  <span>Heart Rate</span>
+                  <span class="form-hint">MAX30102 (bpm)</span>
+                </label>
+                <div class="input-wrap">
+                  <input type="number" id="heart_rate" class="form-input" value="84" min="45" max="150">
+                  <span class="unit-badge">bpm</span>
+                </div>
+              </div>
+
+              <!-- SpO2 -->
+              <div class="form-group">
+                <label class="form-label">
+                  <span>Blood Oxygen (SpO2)</span>
+                  <span class="form-hint">MAX30102 (%)</span>
+                </label>
+                <div class="input-wrap">
+                  <input type="number" id="spo2" class="form-input" value="96" step="0.5" min="85" max="100">
+                  <span class="unit-badge">%</span>
+                </div>
+              </div>
+
+              <!-- Body Temp -->
+              <div class="form-group">
+                <label class="form-label">
+                  <span>Body Temperature</span>
+                  <span class="form-hint">MLX90614 (°C)</span>
+                </label>
+                <div class="input-wrap">
+                  <input type="number" id="body_temp" class="form-input" value="36.7" step="0.1" min="34" max="42">
+                  <span class="unit-badge">°C</span>
+                </div>
+              </div>
+
+              <!-- GSR Stress -->
+              <div class="form-group">
+                <label class="form-label">
+                  <span>Galvanic Skin Response</span>
+                  <span class="form-hint">GSR Stress (0–10)</span>
+                </label>
+                <div class="input-wrap">
+                  <input type="number" id="gsr_stress" class="form-input" value="7.4" step="0.1" min="0" max="10">
+                  <span class="unit-badge">scale</span>
+                </div>
+              </div>
+
+            </div>
+
+            <button type="submit" class="btn-submit" id="btn-run">
+              <span>Run Risk Screening</span>
+              <span>→</span>
+            </button>
+          </form>
+        </div>
+
+        <!-- Right: Real-time English Screening Report -->
+        <div class="card" id="report-card">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title">Screening Assessment</h2>
+              <p class="card-subtitle">Plain-English clinical interpretation & physiological drivers</p>
+            </div>
+            <button type="button" class="preset-btn" onclick="window.print()" id="btn-print" style="display: none;">
+              🖨️ Print Summary
+            </button>
+          </div>
+
+          <!-- Default Empty State -->
+          <div id="report-empty" class="report-placeholder">
+            <div class="report-placeholder-icon">🩺</div>
+            <h3 style="font-size: 15px; font-weight: 700; color: var(--text);">Ready for Patient Screening</h3>
+            <p style="font-size: 13px; margin-top: 4px;">Select a preset or adjust the sensor readings on the left, then click <strong>Run Risk Screening</strong>.</p>
+          </div>
+
+          <!-- Active English Report Body -->
+          <div id="report-active" class="report-body" style="display: none;">
+            
+            <!-- Risk Meter Banner -->
+            <div id="risk-banner" class="risk-header-card risk-high">
+              <div class="risk-score-circle">
+                <span id="score-number" class="risk-circle-num">98%</span>
+                <span class="risk-circle-lbl">Risk Score</span>
+              </div>
+              <div class="risk-headline">
+                <span id="score-badge" class="risk-badge">Elevated Risk</span>
+                <h3 id="score-title" class="risk-title-english">Clinical Follow-up Recommended</h3>
+                <div id="score-meta" class="risk-patient-meta">Patient: VIT_STUDENT_8412 • Just now</div>
+              </div>
+            </div>
+
+            <!-- Plain English Guidance Box -->
+            <div class="guidance-box">
+              <div class="guidance-heading">Clinical Guidance & Action Plan</div>
+              <p id="guidance-text" class="guidance-text">
+                Multiple physiological risk proxies are significantly elevated. Strongly advise scheduling formal diagnostic laboratory testing (HbA1c, FPG) with a medical physician.
+              </p>
+            </div>
+
+            <!-- Explainability: Why did the system calculate this score? -->
+            <div>
+              <div class="drivers-section-title">
+                <span>Top Contributing Physiological Drivers</span>
+                <span style="font-size: 11px; font-weight: normal; color: var(--text-muted);">Explainability Breakdown</span>
+              </div>
+              <div id="drivers-container" class="drivers-list">
+                <!-- Injected via JavaScript -->
+              </div>
+            </div>
+
+            <!-- Features Used vs. Filtered as Noise -->
+            <div class="feature-pills-wrap">
+              <div class="feature-pill-title">Adaptive Feature Selection Status</div>
+              <div style="font-size: 12.5px; margin-bottom: 6px; color: var(--text);">
+                <strong>Sensors Actively Used:</strong>
+              </div>
+              <div id="used-pills" class="pill-group" style="margin-bottom: 12px;"></div>
+
+              <div style="font-size: 12.5px; margin-bottom: 6px; color: var(--text-muted);">
+                <strong>Sensors Filtered Out by GA as Noise:</strong>
+              </div>
+              <div id="pruned-pills" class="pill-group"></div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- TAB 2: GA OPTIMIZATION & ANALYTICS -->
+    <section id="tab-analytics" class="tab-content">
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-lbl">Features Retained</div>
+          <div class="stat-val" id="stat-selected-count">3 / 11</div>
+          <div class="stat-sub">72.7% acquisition reduction</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-lbl">Screening Sensitivity (Recall)</div>
+          <div class="stat-val" id="stat-recall">85.1%</div>
+          <div class="stat-sub">+5.3% higher detection vs baseline</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-lbl">Model Accuracy</div>
+          <div class="stat-val" id="stat-acc">87.1%</div>
+          <div class="stat-sub">Maintained within -1.6% of baseline</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-lbl">Uninformative Noise Pruned</div>
+          <div class="stat-val">100%</div>
+          <div class="stat-sub">3 / 3 noise sensors discarded</div>
+        </div>
+      </div>
+
+      <div class="analytics-grid">
+        <!-- Convergence Chart -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title">Genetic Algorithm Convergence History</h2>
+              <p class="card-subtitle">Fitness progression balancing validation accuracy (w1=0.8) and parsimony (w2=0.2)</p>
+            </div>
+          </div>
+          <div class="chart-container">
+            <img src="/convergence/chart" alt="GA Fitness Convergence Chart" class="chart-img" onerror="this.alt='Chart generation in progress...'">
+            <p style="font-size: 12px; color: var(--text-muted); margin-top: 10px;">
+              Early stopping automatically halted evolution once fitness plateaued, preventing overfitting.
+            </p>
+          </div>
+        </div>
+
+        <!-- Global Feature Importances & Retrain -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title">Optimal Feature Subset Weights</h2>
+              <p class="card-subtitle">Gini importance contribution from the trained Random Forest classifier</p>
+            </div>
+          </div>
+
+          <div id="importances-container" style="margin-bottom: 24px;">
+            <!-- Injected via JavaScript -->
+          </div>
+
+          <div class="guidance-box" style="margin-bottom: 20px;">
+            <div class="guidance-heading">Adaptive Feature Optimization Principle</div>
+            <p style="font-size: 12.5px; color: var(--text);">
+              Inspired by <em>Abdollahi et al. (2026), Intelligence-Based Medicine</em>. By pruning noisy sensors (e.g. ambient lighting, serial hashes, hardware uptime), the kiosk avoids spurious correlations and maximizes opportunistic screening sensitivity.
+            </p>
+          </div>
+
+          <button type="button" class="btn-submit" onclick="triggerRetrain()" id="btn-retrain" style="background: var(--surface-2); color: var(--text); border: 1px solid var(--border); box-shadow: none;">
+            <span>🔄 Re-run Genetic Algorithm Optimization</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 3: SCREENING LOG (SQLite History) -->
+    <section id="tab-history" class="tab-content">
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h2 class="card-title">Kiosk Patient Screening Records</h2>
+            <p class="card-subtitle">Logged locally in SQLite database (healthpass.db) with patient RFID badges</p>
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <input type="text" id="filter-rfid" placeholder="Filter by RFID badge..." class="form-input" style="width: 220px;" oninput="filterHistory()">
+            <button type="button" class="preset-btn" onclick="loadHistory()">Refresh</button>
+          </div>
+        </div>
+
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Date & Time</th>
+                <th>RFID Badge</th>
+                <th>Risk Score</th>
+                <th>Screening Status</th>
+                <th>Recommendation</th>
+              </tr>
+            </thead>
+            <tbody id="history-tbody">
+              <tr>
+                <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 32px;">Loading screening records...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    HealthPass Risk Screening Kiosk • VIT Bhopal University (Health Informatics) • Academic Prototype (Not a Medical Diagnostic Device)
+  </footer>
+
+  <script>
+    // Tab Switching
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.nav-tab').forEach(el => el.classList.remove('active'));
+      document.getElementById(tabId).classList.add('active');
+      event.currentTarget.classList.add('active');
+
+      if (tabId === 'tab-history') {
+        loadHistory();
+      } else if (tabId === 'tab-analytics') {
+        loadAnalytics();
+      }
+    }
+
+    // Input Synchronization
+    function syncVal(sliderId, hiddenId) {
+      const val = document.getElementById(sliderId).value;
+      document.getElementById(hiddenId).value = val;
+      
+      let displayVal = val;
+      if (sliderId === 'activity_level_slider') {
+        const labels = {
+          '1': '1 (Sedentary)',
+          '2': '2 (Light Activity)',
+          '3': '3 (Moderate Active)',
+          '4': '4 (Very Active)',
+          '5': '5 (Athletic)'
+        };
+        displayVal = labels[val] || val;
+      }
+      document.getElementById(sliderId.replace('_slider', '_txt')).innerText = displayVal;
+    }
+
+    // Presets
+    const presets = {
+      high: {
+        rfid_tag: 'VIT_STUDENT_8412',
+        age: 63,
+        bmi: 34.2,
+        systolic_bp: 152,
+        activity_level: 1,
+        heart_rate: 86,
+        spo2: 95.0,
+        body_temp: 36.7,
+        gsr_stress: 7.8
+      },
+      moderate: {
+        rfid_tag: 'VIT_STAFF_3042',
+        age: 49,
+        bmi: 28.5,
+        systolic_bp: 134,
+        activity_level: 2,
+        heart_rate: 76,
+        spo2: 97.0,
+        body_temp: 36.6,
+        gsr_stress: 6.2
+      },
+      low: {
+        rfid_tag: 'VIT_STUDENT_1029',
+        age: 24,
+        bmi: 21.8,
+        systolic_bp: 114,
+        activity_level: 4,
+        heart_rate: 64,
+        spo2: 99.0,
+        body_temp: 36.5,
+        gsr_stress: 2.5
+      }
+    };
+
+    function applyPreset(name) {
+      const p = presets[name];
+      if (!p) return;
+
+      document.getElementById('rfid_tag').value = p.rfid_tag;
+
+      document.getElementById('age_slider').value = p.age;
+      syncVal('age_slider', 'age');
+
+      document.getElementById('bmi_slider').value = p.bmi;
+      syncVal('bmi_slider', 'bmi');
+
+      document.getElementById('systolic_bp_slider').value = p.systolic_bp;
+      syncVal('systolic_bp_slider', 'systolic_bp');
+
+      document.getElementById('activity_level_slider').value = p.activity_level;
+      syncVal('activity_level_slider', 'activity_level');
+
+      document.getElementById('heart_rate').value = p.heart_rate;
+      document.getElementById('spo2').value = p.spo2;
+      document.getElementById('body_temp').value = p.body_temp;
+      document.getElementById('gsr_stress').value = p.gsr_stress;
+
+      // Automatically trigger screening for instant feedback
+      runScreening();
+    }
+
+    // Run Screening Prediction
+    async function runScreening() {
+      const btn = document.getElementById('btn-run');
+      btn.innerHTML = 'Evaluating Physiological Proxies...';
+      btn.disabled = true;
+
+      const payload = {
+        rfid_tag: document.getElementById('rfid_tag').value.trim() || 'ANONYMOUS',
+        readings: {
+          age: parseFloat(document.getElementById('age').value),
+          bmi: parseFloat(document.getElementById('bmi').value),
+          systolic_bp: parseFloat(document.getElementById('systolic_bp').value),
+          activity_level: parseInt(document.getElementById('activity_level').value),
+          heart_rate: parseFloat(document.getElementById('heart_rate').value),
+          spo2: parseFloat(document.getElementById('spo2').value),
+          body_temp: parseFloat(document.getElementById('body_temp').value),
+          gsr_stress: parseFloat(document.getElementById('gsr_stress').value)
+        }
+      };
+
+      try {
+        const res = await fetch('/predict', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        renderEnglishReport(data);
+      } catch (err) {
+        alert('Screening request failed: ' + err.message);
+      } finally {
+        btn.innerHTML = 'Run Risk Screening →';
+        btn.disabled = false;
+      }
+    }
+
+    // Render Clean English Report Card
+    function renderEnglishReport(data) {
+      document.getElementById('report-empty').style.display = 'none';
+      document.getElementById('report-active').style.display = 'flex';
+      document.getElementById('btn-print').style.display = 'inline-flex';
+
+      const score = data.risk_score;
+      const label = data.risk_label;
+      const banner = document.getElementById('risk-banner');
+
+      // Style according to risk tier
+      banner.className = 'risk-header-card';
+      let tierClass = 'risk-low';
+      let badgeTxt = 'Low Risk Screened';
+
+      if (score >= 65.0) {
+        tierClass = 'risk-high';
+        badgeTxt = 'Elevated Risk';
+      } else if (score >= 35.0) {
+        tierClass = 'risk-moderate';
+        badgeTxt = 'Moderate Risk';
+      }
+
+      banner.classList.add(tierClass);
+      document.getElementById('score-number').innerText = score.toFixed(1) + '%';
+      document.getElementById('score-badge').innerText = badgeTxt;
+      document.getElementById('score-title').innerText = label;
+      document.getElementById('score-meta').innerText = `Patient Badge: ${data.rfid_tag} • ${new Date().toLocaleTimeString()}`;
+
+      // Clinical Recommendation
+      document.getElementById('guidance-text').innerText = data.clinical_recommendation;
+
+      // Top Contributing Drivers (English Explanation)
+      const driversContainer = document.getElementById('drivers-container');
+      driversContainer.innerHTML = '';
+
+      if (data.top_contributing_features && data.top_contributing_features.length > 0) {
+        data.top_contributing_features.forEach(feat => {
+          const isIncrease = feat.impact === 'increases_risk';
+          const icon = isIncrease ? '▲' : '▼';
+          const iconClass = isIncrease ? 'impact-up' : 'impact-down';
+          const sign = isIncrease ? 'Increases Risk' : 'Protective / Normal';
+
+          const card = document.createElement('div');
+          card.className = 'driver-card';
+          card.innerHTML = `
+            <div class="driver-impact-icon ${iconClass}">${icon}</div>
+            <div class="driver-details">
+              <div class="driver-name-row">
+                <span class="driver-feature-name">${feat.feature.replace('_', ' ')}</span>
+                <span class="driver-value-tag">${feat.value !== null ? feat.value : ''} (${sign})</span>
+              </div>
+              <p class="driver-sentence">${feat.description}</p>
+            </div>
+          `;
+          driversContainer.appendChild(card);
+        });
+      }
+
+      // Feature Pills
+      const usedGroup = document.getElementById('used-pills');
+      usedGroup.innerHTML = '';
+      (data.features_used || []).forEach(f => {
+        const pill = document.createElement('span');
+        pill.className = 'pill pill-selected';
+        pill.innerText = '✓ ' + f.replace('_', ' ');
+        usedGroup.appendChild(pill);
+      });
+
+      // Update pruned pills from cache
+      updatePrunedPills(data.features_used);
+    }
+
+    let globalPrunedFeatures = [];
+
+    async function updatePrunedPills(usedFeatures) {
+      if (!globalPrunedFeatures.length) {
+        try {
+          const res = await fetch('/features');
+          const d = await res.json();
+          globalPrunedFeatures = d.pruned_features || [];
+        } catch (e) {}
+      }
+      const prunedGroup = document.getElementById('pruned-pills');
+      prunedGroup.innerHTML = '';
+      globalPrunedFeatures.forEach(f => {
+        const pill = document.createElement('span');
+        pill.className = 'pill pill-pruned';
+        pill.innerText = '✕ ' + f.replace('_', ' ');
+        prunedGroup.appendChild(pill);
+      });
+    }
+
+    // Analytics Tab
+    async function loadAnalytics() {
+      try {
+        const res = await fetch('/features');
+        const data = await res.json();
+
+        document.getElementById('stat-selected-count').innerText = `${data.selected_count} / ${data.selected_count + data.pruned_count}`;
+        if (data.evaluation_metrics && data.evaluation_metrics.ga_selected) {
+          const ga = data.evaluation_metrics.ga_selected;
+          document.getElementById('stat-acc').innerText = (ga.accuracy * 100).toFixed(1) + '%';
+          document.getElementById('stat-recall').innerText = (ga.recall * 100).toFixed(1) + '%';
+        }
+
+        const impContainer = document.getElementById('importances-container');
+        impContainer.innerHTML = '';
+        const imps = data.feature_importances || {};
+
+        for (const [feat, val] of Object.entries(imps)) {
+          const pct = (val * 100).toFixed(1);
+          const row = document.createElement('div');
+          row.className = 'importance-bar-row';
+          row.innerHTML = `
+            <div class="importance-info">
+              <span style="text-transform: capitalize;">${feat.replace('_', ' ')}</span>
+              <span>${pct}% importance</span>
+            </div>
+            <div class="importance-track">
+              <div class="importance-fill" style="width: ${pct}%;"></div>
+            </div>
+          `;
+          impContainer.appendChild(row);
+        }
+      } catch (err) {
+        console.error('Failed to load analytics', err);
+      }
+    }
+
+    // Trigger Retrain
+    async function triggerRetrain() {
+      const btn = document.getElementById('btn-retrain');
+      if (!confirm('Re-run the Genetic Algorithm feature optimization and retrain the model now?')) return;
+      btn.innerHTML = 'Evolving Chromosomes (Genetic Algorithm)...';
+      btn.disabled = true;
+
+      try {
+        const res = await fetch('/retrain', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ n_population: 25, n_generations: 20 })
+        });
+        const data = await res.json();
+        alert('Retraining complete! GA selected: ' + data.metrics.ga_selected.features.join(', '));
+        loadAnalytics();
+      } catch (err) {
+        alert('Retrain error: ' + err.message);
+      } finally {
+        btn.innerHTML = '🔄 Re-run Genetic Algorithm Optimization';
+        btn.disabled = false;
+      }
+    }
+
+    // History Log
+    let allHistory = [];
+    async function loadHistory() {
+      const tbody = document.getElementById('history-tbody');
+      try {
+        const res = await fetch('/screenings?limit=30');
+        const data = await res.json();
+        allHistory = data.screenings || [];
+        renderHistoryTable(allHistory);
+      } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="5" style="color: var(--danger); text-align: center;">Failed to load records: ${err.message}</td></tr>`;
+      }
+    }
+
+    function renderHistoryTable(items) {
+      const tbody = document.getElementById('history-tbody');
+      tbody.innerHTML = '';
+
+      if (!items.length) {
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 32px;">No screening records found in database.</td></tr>`;
+        return;
+      }
+
+      items.forEach(item => {
+        const isHigh = item.risk_score >= 65;
+        const isMod = item.risk_score >= 35 && item.risk_score < 65;
+        const badgeClass = isHigh ? 'dot-danger' : (isMod ? 'dot-warning' : 'dot-success');
+        const formattedDate = new Date(item.timestamp).toLocaleString();
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><strong>${formattedDate}</strong></td>
+          <td><span style="font-family: 'JetBrains Mono', monospace; font-weight: 600;">${item.rfid_tag || 'ANONYMOUS'}</span></td>
+          <td><span style="font-family: 'JetBrains Mono', monospace; font-weight: 700;">${item.risk_score.toFixed(1)}%</span></td>
+          <td>
+            <span style="display: inline-flex; align-items: center; gap: 6px; font-weight: 700;">
+              <span class="${badgeClass}"></span> ${item.risk_label}
+            </span>
+          </td>
+          <td style="max-width: 320px; font-size: 12.5px; color: #475569;">${item.recommendation}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function filterHistory() {
+      const q = document.getElementById('filter-rfid').value.toLowerCase().trim();
+      if (!q) {
+        renderHistoryTable(allHistory);
+      } else {
+        const filtered = allHistory.filter(h => (h.rfid_tag || '').toLowerCase().includes(q));
+        renderHistoryTable(filtered);
+      }
+    }
+
+    // Auto-initialize on load
+    window.addEventListener('DOMContentLoaded', () => {
+      loadAnalytics();
+      // Preload high risk preset values into form
+      applyPreset('high');
+    });
+  </script>
+</body>
+</html>

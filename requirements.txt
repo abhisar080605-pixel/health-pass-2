@@ -1,0 +1,16 @@
+# HealthPass - Adaptive Feature Selection for Diabetes Risk Screening
+# Core dependencies pinned to validated working versions
+
+Flask==3.1.2
+scikit-learn==1.6.1
+pandas==2.3.3
+numpy==2.3.3
+matplotlib==3.10.6
+joblib==1.5.3
+requests==2.32.5
+gunicorn>=21.2.0
+
+# Optional Explainability & Advanced Boosters
+# (The engine automatically utilizes SHAP if installed, falling back cleanly to tree feature contributions if absent)
+# shap>=0.45.0
+# xgboost>=2.0.0
