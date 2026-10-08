@@ -1307,40 +1307,59 @@
 
     // Analytics Tab
     async function loadAnalytics() {
-      try {
-        const res = await fetch('/features');
-        const data = await res.json();
+  try {
+    const res = await fetch('/features');
+    const data = await res.json();
 
-        document.getElementById('stat-selected-count').innerText = `${data.selected_count} / ${data.selected_count + data.pruned_count}`;
-        if (data.evaluation_metrics && data.evaluation_metrics.ga_selected) {
-          const ga = data.evaluation_metrics.ga_selected;
-          document.getElementById('stat-acc').innerText = (ga.accuracy * 100).toFixed(1) + '%';
-          document.getElementById('stat-recall').innerText = (ga.recall * 100).toFixed(1) + '%';
-        }
+    if (document.getElementById('stat-selected-count')) {
+      document.getElementById('stat-selected-count').innerText = `${data.selected_count} / ${data.selected_count + data.pruned_count}`;
+    }
+    if (data.evaluation_metrics && data.evaluation_metrics.ga_selected) {
+      const ga = data.evaluation_metrics.ga_selected;
+      if (document.getElementById('stat-acc')) document.getElementById('stat-acc').innerText = (ga.accuracy * 100).toFixed(1) + '%';
+      if (document.getElementById('stat-recall')) document.getElementById('stat-recall').innerText = (ga.recall * 100).toFixed(1) + '%';
+    }
 
-        const impContainer = document.getElementById('importances-container');
-        impContainer.innerHTML = '';
-        const imps = data.feature_importances || {};
+    // GA Selected features rendering (Pills)
+    const usedContainer = document.getElementById('used-pills');
+    if (usedContainer && data.selected_features) {
+      usedContainer.innerHTML = data.selected_features
+        .map(f => `<span class="pill pill-success">${f.replace('_', ' ')}</span>`)
+        .join('');
+    }
 
-        for (const [feat, val] of Object.entries(imps)) {
-          const pct = (val * 100).toFixed(1);
-          const row = document.createElement('div');
-          row.className = 'importance-bar-row';
-          row.innerHTML = `
-            <div class="importance-info">
-              <span style="text-transform: capitalize;">${feat.replace('_', ' ')}</span>
-              <span>${pct}% importance</span>
-            </div>
-            <div class="importance-track">
-              <div class="importance-fill" style="width: ${pct}%;"></div>
-            </div>
-          `;
-          impContainer.appendChild(row);
-        }
-      } catch (err) {
-        console.error('Failed to load analytics', err);
+    // Pruned features rendering (Pills)
+    const prunedContainer = document.getElementById('pruned-pills');
+    if (prunedContainer && data.pruned_features) {
+      prunedContainer.innerHTML = data.pruned_features
+        .map(f => `<span class="pill pill-danger">${f.replace('_', ' ')}</span>`)
+        .join('');
+    }
+
+    // Feature Importances rendering
+    const impContainer = document.getElementById('importances-container');
+    if (impContainer && data.feature_importances) {
+      impContainer.innerHTML = '';
+      for (const [feat, val] of Object.entries(data.feature_importances)) {
+        const pct = (val * 100).toFixed(1);
+        const row = document.createElement('div');
+        row.className = 'importance-bar-row';
+        row.innerHTML = `
+          <div class="importance-info">
+            <span style="text-transform: capitalize;">${feat.replace('_', ' ')}</span>
+            <span>${pct}% importance</span>
+          </div>
+          <div class="importance-track">
+            <div class="importance-fill" style="width: ${pct}%;"></div>
+          </div>
+        `;
+        impContainer.appendChild(row);
       }
     }
+  } catch (err) {
+    console.error('Failed to load analytics:', err);
+  }
+}
 
     // Trigger Retrain
     async function triggerRetrain() {
@@ -1427,6 +1446,22 @@
       // Preload high risk preset values into form
       applyPreset('high');
     });
+    // ESP32 Live Polling Function
+function fetchLatestReadings() {
+  fetch('/latest')
+    .then(res => res.ok ? res.json() : null)
+    .then(data => {
+      if (!data || !data.readings) return;
+      
+      if (document.getElementById('hr-val')) document.getElementById('hr-val').textContent = data.readings.heart_rate ?? '--';
+      if (document.getElementById('spo2-val')) document.getElementById('spo2-val').textContent = data.readings.spo2 ?? '--';
+      if (document.getElementById('temp-val')) document.getElementById('temp-val').textContent = data.readings.body_temp ?? '--';
+    })
+    .catch(err => console.debug('Waiting for kiosk data...', err));
+}
+
+// Start live polling every 2 seconds
+setInterval(fetchLatestReadings, 2000);
   </script>
 </body>
 </html>
